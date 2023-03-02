@@ -7,20 +7,11 @@ import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Paper from '@mui/material/Paper';
-import borders from '@mui/system';
+import useSocket from './Hooks/useSocket';
 
-interface Props {
-  isConnected: boolean;
-  members: string[];
-  chatRows: React.ReactNode[];
-  onPublicMessage: () => void;
-  onPrivateMessage: (to: string) => void;
-  onConnect: () => void;
-  onDisconnect: () => void;
-  onBotMessage: () => void;
-}
+export const ChatClient = () => {    
+    const {isConnected, members, chatRows, onSendPublicMessage, onSendPrivateMessage, onSendBotMessage, onConnect, onDisconnect} = useSocket()
 
-export const ChatClient = (props: Props) => {
   return (
     <div style={{
       position: 'absolute',
@@ -52,8 +43,8 @@ export const ChatClient = (props: Props) => {
             >
 
             <List component="nav">
-              {props.members.map(item =>
-                <ListItem key={item} onClick={() => {{props.onPrivateMessage(item)};}} button>
+              {members.map(item =>
+                <ListItem key={item} onClick={() => {{onSendPrivateMessage(item)};}} button>
                   <ListItemText style={{ fontWeight: 800 }} primary={item} />
                 </ListItem>
               )}
@@ -72,7 +63,7 @@ export const ChatClient = (props: Props) => {
                     paddingLeft: 44,
                     listStyleType: 'none',
                   }}>
-                    {props.chatRows.map((item, i) =>
+                    {chatRows.map((item, i) =>
                       <li key={i} style={{ paddingBottom: 9 }}>{item}</li>
                     )}
                   </ul>
@@ -80,15 +71,15 @@ export const ChatClient = (props: Props) => {
 
                 {/* Botões de envio de mensagem */}
                 <Grid item style={{ margin: 10 }}>
-                  {props.isConnected && 
+                  {isConnected && 
                   
                   <Button 
-                    style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" disableElevation onClick={props.onPublicMessage}>Mensagem pública</Button>
+                    style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" disableElevation onClick={onSendPublicMessage}>Mensagem pública</Button>
                   }
                   
-                  {props.isConnected && <Button style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" disableElevation onClick={props.onBotMessage}>Mensagem para o Bot</Button>}
-                  {props.isConnected && <Button style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" disableElevation onClick={props.onDisconnect}>Sair</Button>}
-                  {!props.isConnected && <Button style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" disableElevation onClick={props.onConnect}>Entrar</Button>}
+                  {isConnected && <Button style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" disableElevation onClick={onSendBotMessage}>Mensagem para o Bot</Button>}
+                  {isConnected && <Button style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" disableElevation onClick={onDisconnect}>Sair</Button>}
+                  {!isConnected && <Button style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" disableElevation onClick={onConnect}>Entrar</Button>}
                 </Grid>
               </Grid>
               <div style={{
@@ -97,7 +88,7 @@ export const ChatClient = (props: Props) => {
                 top: 8,
                 width: 12,
                 height: 12,
-                backgroundColor: props.isConnected ? '#00da00' : '#e2e2e2',
+                backgroundColor: isConnected ? '#00da00' : '#e2e2e2',
                 borderRadius: 50,
               }} />
             </Paper>
