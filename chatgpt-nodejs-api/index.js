@@ -82,21 +82,21 @@ exports.handler = async(event) => {
             case '$connect':
                 break;
             case '$disconnect':
-                await sendToAll(Object.keys(names), {systemMessage: true, message: `${participants[connectionId].name} acabou de sair.`});
+                await sendToAll(Object.keys(participants), {systemMessage: true, message: `${participants[connectionId].name} acabou de sair.`});
                 delete names[connectionId];
                 delete participants[connectionId];
-                await sendToAll(Object.keys(names), {members:Object.values(names)});
+                await sendToAll(Object.keys(participants), {members:Object.values(participants)});
                 break;
             case '$default':
                 break;
             case 'setName':
                 names[connectionId] = body.name;
                 participants[connectionId] = body.userConnected
-                await sendToAll(Object.keys(names), {members:Object.values(names)});
-                await sendToAll(Object.keys(names), {systemMessage: true, message: `${participants[connectionId].name} acabou de entrar.`});
+                await sendToAll(Object.keys(participants), {members:Object.values(participants)});
+                await sendToAll(Object.keys(participants), {systemMessage: true, message: `${participants[connectionId].name} acabou de entrar.`});
                 break;
             case 'sendPublic':
-                await sendToAll(Object.keys(names),{
+                await sendToAll(Object.keys(participants),{
                   message: `${body.message}`,
                   from: {
                     id: connectionId,
@@ -105,17 +105,17 @@ exports.handler = async(event) => {
                 });
                 break;
             case 'sendBot':
-                await sendToAll(Object.keys(names),{
+                await sendToAll(Object.keys(participants),{
                   message: `${body.message}`,
                   from: {
                     id: connectionId,
                     ...participants[connectionId]
                   }
                 });
-                await sendToBot(Object.keys(names), body.message);
+                await sendToBot(Object.keys(participants), body.message);
                 break;
             case 'sendPrivate':
-                const to  = Object.keys(names).find(key => names[key] === body.to);
+                const to  = Object.keys(participants).find(key => participants[key] === body.to);
                 await sendToOne(to, {
                   privateMessage: true, 
                   message: `${body.message}`,

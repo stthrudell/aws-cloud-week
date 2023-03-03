@@ -46,7 +46,7 @@ export const ChatClient = () => {
               {!members.length && <Text fontSize='sm' as='i' fontWeight="thin" opacity="0.3">Nenhum participante</Text>}
               {members.map((member, index) =>
                 <ListItem key={index} onClick={() => console.log("mandar msg para ", member)}>
-                  <Text style={{ fontWeight: 800 }}>{member}</Text>
+                  <Text style={{ fontWeight: 800 }}>{member.name}</Text>
                 </ListItem>
               )}
             </List>

@@ -119,13 +119,18 @@ const useSocket: () => Props = () => {
 
 interface Props {
   isConnected: boolean;
-  members: string[];
+  members: IParticipant[];
   chatRows: any;
   onSendPublicMessage: (message) => void;
   onSendPrivateMessage: (to: string) => void;
   onConnect: (props: { name: string, nickColor: string }) => void;
   onDisconnect: () => void;
   onSendBotMessage: () => void;
+}
+
+interface IParticipant {
+  name: string;
+  nickColor: string;
 }
 
 export default useSocket;
