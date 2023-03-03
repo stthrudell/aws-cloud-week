@@ -13,75 +13,11 @@ interface SocketData {
   }
 }
 
-const partic = [
-  "jean1",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean33",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean11",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean3",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean334",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean4",
-  "jean",
-  "jean",
-  "jean",
-  "jean123",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean354",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean",
-  "jean13",
-]
-
-const messagesDefault = [
-  { message: "testeinicio", from: { name: "jean" } }
-]
-
 const useSocket: () => Props = () => {
   const socket = React.useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = React.useState(false);
-  const [members, setMembers] = React.useState(partic);
-  const [chatRows, setChatRows] = React.useState<SocketData[]>(messagesDefault);
+  const [members, setMembers] = React.useState([]);
+  const [chatRows, setChatRows] = React.useState<SocketData[]>([]);
   let name;
 
   const onSocketOpen = React.useCallback(() => {

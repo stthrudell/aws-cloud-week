@@ -35,8 +35,9 @@ export const ChatClient = () => {
             <List>
               <Text>Participantes</Text>
               <Divider mb="15px" opacity="0.2" />
+              {!members.length && <Text fontSize='sm' as='i' fontWeight="thin" opacity="0.3">Nenhum participante</Text>}
               {members.map((item, index) =>
-                <ListItem key={index} onClick={() => { { onSendPrivateMessage(item) } }}>
+                <ListItem key={index} onClick={() => onSendPrivateMessage(item)}>
                   <Text style={{ fontWeight: 800 }}>{item}</Text>
                 </ListItem>
               )}
