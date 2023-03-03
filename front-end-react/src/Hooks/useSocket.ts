@@ -7,7 +7,7 @@ interface SocketData {
   message: string;
   fromBot?: boolean;
   systemMessage?: boolean;
-  from: {
+  from?: {
     name: string
     id?: string
   }
@@ -30,14 +30,14 @@ const useSocket: () => Props = () => {
   }, []);
 
   const onSocketClose = React.useCallback(() => {
-    setMembers([]);
+    // setMembers([]);
+    // setChatRows([]);
     setIsConnected(false);
-    setChatRows([]);
+    setChatRows(oldArray => [...oldArray, { "systemMessage": true, "message": "Você saiu." }]);
   }, []);
 
   const onSocketMessage = React.useCallback((dataStr) => {
     const data: SocketData = JSON.parse(dataStr);
-    console.log(data)
     if (data.members) {
       setMembers(data.members);
     } else {
@@ -51,7 +51,6 @@ const useSocket: () => Props = () => {
       socket.current.addEventListener('open', onSocketOpen);
       socket.current.addEventListener('close', onSocketClose);
       socket.current.addEventListener('message', (event) => {
-        console.log('escutanbdo', event)
         onSocketMessage(event.data);
       });
     }

@@ -4,13 +4,13 @@ import { Flex, Container, Grid, List, ListItem, Button, Text, GridItem, Divider,
 import { InputMessage } from './InputMessage';
 import { useBetween } from 'use-between';
 import { IoExitOutline } from 'react-icons/io5';
+import { ChatMessage } from './ChatMessage';
 
 const useSharedSocket = () => useBetween(useSocket);
 
 export const ChatClient = () => {
   const { isConnected, members, chatRows, onConnect, onDisconnect } = useSharedSocket()
 
-  console.log(members, 'aaaa')
   return (
     <Flex
       backgroundColor="#EDEDEF"
@@ -79,9 +79,7 @@ export const ChatClient = () => {
                 <List display="flex" flexDir="column" justifyContent="end">
                   {chatRows.map((message, index) =>
                     <ListItem key={index}>
-                      <Text paddingBottom={5} >
-                        {message.from && <span style={{ fontWeight: 800 }}>{message.from.name}:</span>} {message.message}
-                      </Text>
+                      <ChatMessage message={message} />
                     </ListItem>
                   )}
                 </List>

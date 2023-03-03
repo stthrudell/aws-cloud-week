@@ -13,7 +13,6 @@ export const InputMessage = () => {
   const { isConnected, onSendPublicMessage, onSendPrivateMessage, onSendBotMessage, onConnect } = useSharedSocket()
 
   const handleSendMessage = (event) => {
-    console.log("haaa")
     event.preventDefault()
     onSendPublicMessage(message)
     setMessage("")
