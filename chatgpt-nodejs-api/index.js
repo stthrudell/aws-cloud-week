@@ -82,7 +82,7 @@ exports.handler = async(event) => {
             case '$connect':
                 break;
             case '$disconnect':
-                await sendToAll(Object.keys(names), {systemMessage: true, message: `${names[connectionId]} acabou de sair.`});
+                await sendToAll(Object.keys(names), {systemMessage: true, message: `${participants[connectionId].name} acabou de sair.`});
                 delete names[connectionId];
                 delete participants[connectionId];
                 await sendToAll(Object.keys(names), {members:Object.values(names)});
@@ -91,18 +91,16 @@ exports.handler = async(event) => {
                 break;
             case 'setName':
                 names[connectionId] = body.name;
-                participants[connectionId] = {
-                  name: body.name
-                }
+                participants[connectionId] = body.userConnected
                 await sendToAll(Object.keys(names), {members:Object.values(names)});
-                await sendToAll(Object.keys(names), {systemMessage: true, message: `${names[connectionId]} acabou de entrar.`});
+                await sendToAll(Object.keys(names), {systemMessage: true, message: `${participants[connectionId].name} acabou de entrar.`});
                 break;
             case 'sendPublic':
                 await sendToAll(Object.keys(names),{
                   message: `${body.message}`,
                   from: {
                     id: connectionId,
-                    name: participants[connectionId].name
+                    ...participants[connectionId]
                   }
                 });
                 break;
@@ -111,7 +109,7 @@ exports.handler = async(event) => {
                   message: `${body.message}`,
                   from: {
                     id: connectionId,
-                    name: participants[connectionId].name
+                    ...participants[connectionId]
                   }
                 });
                 await sendToBot(Object.keys(names), body.message);
@@ -123,7 +121,7 @@ exports.handler = async(event) => {
                   message: `${body.message}`,
                   from: {
                     id: connectionId,
-                    name: participants[connectionId].name
+                    ...participants[connectionId]
                   }});
                 break;
             default:
