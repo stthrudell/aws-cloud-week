@@ -1,11 +1,16 @@
 import React from 'react'
-import useSocket from './Hooks/useSocket';
-import { Flex, Container, Grid, List, ListItem, Button, Text, GridItem, Divider } from '@chakra-ui/react'
+import useSocket from '../Hooks/useSocket';
+import { Flex, Container, Grid, List, ListItem, Button, Text, GridItem, Divider, Icon, HStack } from '@chakra-ui/react'
+import { InputMessage } from './InputMessage';
+import { useBetween } from 'use-between';
+import { IoExitOutline } from 'react-icons/io5';
+
+const useSharedSocket = () => useBetween(useSocket);
 
 export const ChatClient = () => {
-  const { isConnected, members, chatRows, onSendPublicMessage, onSendPrivateMessage, onSendBotMessage, onConnect, onDisconnect } = useSocket()
+  const { isConnected, members, chatRows, onConnect, onDisconnect } = useSharedSocket()
 
-  console.log(chatRows)
+  console.log(members, 'aaaa')
   return (
     <Flex
       backgroundColor="#EDEDEF"
@@ -33,12 +38,15 @@ export const ChatClient = () => {
             }}
           >
             <List>
-              <Text>Participantes</Text>
+              <HStack justifyContent="space-between">
+                <Text>Participantes</Text>
+                {isConnected && <Button size='sm' variant="ghost" color="orange" onClick={onDisconnect}><Icon as={IoExitOutline} /></Button>}
+              </HStack>
               <Divider mb="15px" opacity="0.2" />
               {!members.length && <Text fontSize='sm' as='i' fontWeight="thin" opacity="0.3">Nenhum participante</Text>}
-              {members.map((item, index) =>
-                <ListItem key={index} onClick={() => onSendPrivateMessage(item)}>
-                  <Text style={{ fontWeight: 800 }}>{item}</Text>
+              {members.map((member, index) =>
+                <ListItem key={index} onClick={() => console.log("mandar msg para ", member)}>
+                  <Text style={{ fontWeight: 800 }}>{member}</Text>
                 </ListItem>
               )}
             </List>
@@ -81,25 +89,18 @@ export const ChatClient = () => {
 
               </Grid>
               <Grid style={{ margin: 10 }}>
-                {isConnected &&
-                  <>
-                    <Button style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" onClick={onSendBotMessage}>Mensagem para o Bot</Button>
-                    <Button style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" onClick={onSendPublicMessage}>Mensagem pública</Button>
-                    <Button style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" onClick={onDisconnect}>Sair</Button>
-                  </>
-                }
-                {!isConnected && <Button style={{ marginRight: 7, color: "#232F3E", borderColor: "#232F3E" }} variant="outlined" size="small" onClick={onConnect}>Entrar</Button>}
+                <InputMessage />
               </Grid>
             </Grid>
             <div style={{
-                position: 'absolute',
-                right: 9,
-                top: 8,
-                width: 12,
-                height: 12,
-                backgroundColor: isConnected ? '#00da00' : '#e2e2e2',
-                borderRadius: 50,
-              }} />
+              position: 'absolute',
+              right: 9,
+              top: 8,
+              width: 12,
+              height: 12,
+              backgroundColor: isConnected ? '#00da00' : '#e2e2e2',
+              borderRadius: 50,
+            }} />
           </GridItem>
         </Grid>
       </Container>

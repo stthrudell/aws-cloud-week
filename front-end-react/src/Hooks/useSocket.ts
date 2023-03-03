@@ -51,6 +51,7 @@ const useSocket: () => Props = () => {
       socket.current.addEventListener('open', onSocketOpen);
       socket.current.addEventListener('close', onSocketClose);
       socket.current.addEventListener('message', (event) => {
+        console.log('escutanbdo', event)
         onSocketMessage(event.data);
       });
     }
@@ -59,6 +60,8 @@ const useSocket: () => Props = () => {
   React.useEffect(() => {
     return () => {
       socket.current?.close();
+      socket.current?.removeEventListener('open', onSocketOpen);
+      socket.current?.removeEventListener('close', onSocketClose);
     };
   }, []);
 
@@ -73,8 +76,7 @@ const useSocket: () => Props = () => {
     }
   }, []);
 
-  const onSendPublicMessage = React.useCallback(() => {
-    const message = prompt('Mensagem pública');
+  const onSendPublicMessage = React.useCallback((message) => {
     if (message !== null && message !== "") {
       socket.current?.send(JSON.stringify({
         action: 'sendPublic',
@@ -117,7 +119,7 @@ interface Props {
   isConnected: boolean;
   members: string[];
   chatRows: any;
-  onSendPublicMessage: () => void;
+  onSendPublicMessage: (message) => void;
   onSendPrivateMessage: (to: string) => void;
   onConnect: () => void;
   onDisconnect: () => void;
