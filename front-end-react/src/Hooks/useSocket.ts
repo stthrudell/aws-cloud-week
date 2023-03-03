@@ -13,20 +13,22 @@ interface SocketData {
   }
 }
 
+interface IUserSocketConnected {
+  name: string;
+  nickColor: string;
+}
+
 const useSocket: () => Props = () => {
   const socket = React.useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = React.useState(false);
   const [members, setMembers] = React.useState([]);
   const [chatRows, setChatRows] = React.useState<SocketData[]>([]);
-  let name;
+
+  let userConnected: IUserSocketConnected;
 
   const onSocketOpen = React.useCallback(() => {
     setIsConnected(true);
-    name = prompt('Informe o seu nome:');
-    if (name !== null && name !== "") {
-
-      socket.current?.send(JSON.stringify({ action: 'setName', name }));
-    }
+    socket.current?.send(JSON.stringify({ action: 'setName', userConnected }));
   }, []);
 
   const onSocketClose = React.useCallback(() => {
@@ -45,8 +47,9 @@ const useSocket: () => Props = () => {
     }
   }, []);
 
-  const onConnect = React.useCallback(() => {
+  const onConnect = React.useCallback(({ name, nickColor }) => {
     if (socket.current?.readyState !== WebSocket.OPEN) {
+      userConnected = { name, nickColor }
       socket.current = new WebSocket(URL);
       socket.current.addEventListener('open', onSocketOpen);
       socket.current.addEventListener('close', onSocketClose);
@@ -59,14 +62,14 @@ const useSocket: () => Props = () => {
   React.useEffect(() => {
     return () => {
       socket.current?.close();
-      socket.current?.removeEventListener('open', onSocketOpen);
+      // socket.current?.removeEventListener('open', onSocketOpen);
       socket.current?.removeEventListener('close', onSocketClose);
     };
   }, []);
 
   const onSendPrivateMessage = React.useCallback((to: string) => {
     const message = prompt('Mensagem privada para: ' + to);
-    if (message !== null && message !== "" && to !== name) {
+    if (message !== null && message !== "" && to !== userConnected?.name) {
       socket.current?.send(JSON.stringify({
         action: 'sendPrivate',
         message,
@@ -120,7 +123,7 @@ interface Props {
   chatRows: any;
   onSendPublicMessage: (message) => void;
   onSendPrivateMessage: (to: string) => void;
-  onConnect: () => void;
+  onConnect: (props: { name: string, nickColor: string }) => void;
   onDisconnect: () => void;
   onSendBotMessage: () => void;
 }

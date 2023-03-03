@@ -18,7 +18,7 @@ export const ChatMessage = ({ message }) => {
       as={message.systemMessage && "i"}
       opacity={message.systemMessage && "0.5"}
     >
-      {message.from && <span style={{ fontWeight: 800 }}>{message.from.name}:</span>} {message.message}
+      {message.from && <span style={{ fontWeight: 800, color: message.from.nickColor || 'black' }}>{message.from.name}:</span>} {message.message}
     </Text>
   )
 };
