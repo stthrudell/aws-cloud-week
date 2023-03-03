@@ -1,11 +1,12 @@
+require('dotenv').config()
 const AWS = require('aws-sdk')
 
 const ENDPOINT = process.env.API_ENDPOINT
 const client = new AWS.ApiGatewayManagementApi({endpoint: ENDPOINT})
 const names = {};
+const participants = {}
 
 const { Configuration, OpenAIApi } = require("openai");
-require('dotenv').config()
 
 const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
@@ -33,7 +34,13 @@ const sendToBot = async (ids, mess) => {
     
     let res = await runCompletion(mess);
     
-    let message = {publicMessage: `Bot : ${res}`}
+    let message = {
+      fromBot: true, 
+      message: res,
+      from: {
+        name: 'Bot'
+      }
+    }
     const all = ids.map(i => sendToOne(i, message));
     
     return Promise.all(all);
@@ -75,27 +82,49 @@ exports.handler = async(event) => {
             case '$connect':
                 break;
             case '$disconnect':
-                await sendToAll(Object.keys(names), {systemMessage: `${names[connectionId]} acabou de sair.`});
+                await sendToAll(Object.keys(names), {systemMessage: true, message: `${names[connectionId]} acabou de sair.`});
                 delete names[connectionId];
+                delete participants[connectionId];
                 await sendToAll(Object.keys(names), {members:Object.values(names)});
                 break;
             case '$default':
                 break;
             case 'setName':
                 names[connectionId] = body.name;
+                participants[connectionId] = {
+                  name: body.name
+                }
                 await sendToAll(Object.keys(names), {members:Object.values(names)});
-                await sendToAll(Object.keys(names), {systemMessage: `${names[connectionId]} acabou de entrar.`});
+                await sendToAll(Object.keys(names), {systemMessage: true, message: `${names[connectionId]} acabou de entrar.`});
                 break;
             case 'sendPublic':
-                await sendToAll(Object.keys(names),{publicMessage: `${names[connectionId]} : ${body.message}`});
+                await sendToAll(Object.keys(names),{
+                  message: `${body.message}`,
+                  from: {
+                    id: connectionId,
+                    name: participants[connectionId].name
+                  }
+                });
                 break;
             case 'sendBot':
-                await sendToAll(Object.keys(names),{publicMessage: `${names[connectionId]} : ${body.message}`});
+                await sendToAll(Object.keys(names),{
+                  message: `${body.message}`,
+                  from: {
+                    id: connectionId,
+                    name: participants[connectionId].name
+                  }
+                });
                 await sendToBot(Object.keys(names), body.message);
                 break;
             case 'sendPrivate':
                 const to  = Object.keys(names).find(key => names[key] === body.to);
-                await sendToOne(to,{privateMessage:  `${names[connectionId]} : ${body.message}`});
+                await sendToOne(to, {
+                  privateMessage: true, 
+                  message: `${body.message}`,
+                  from: {
+                    id: connectionId,
+                    name: participants[connectionId].name
+                  }});
                 break;
             default:
         }
