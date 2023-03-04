@@ -128,9 +128,6 @@ interface Props {
   onSendBotMessage: () => void;
 }
 
-interface IParticipant {
-  name: string;
-  nickColor: string;
-}
+export interface IParticipant extends IUserSocketConnected { }
 
 export default useSocket;
