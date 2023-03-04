@@ -4,7 +4,13 @@ const AWS = require('aws-sdk')
 const ENDPOINT = process.env.API_ENDPOINT
 const client = new AWS.ApiGatewayManagementApi({endpoint: ENDPOINT})
 const names = {};
-const participants = {}
+const participants = {
+  bot: {
+    name: 'BOT',
+    nickColor: 'red',
+    id: 'bot'
+  }
+}
 
 const { Configuration, OpenAIApi } = require("openai");
 
@@ -63,8 +69,19 @@ const sendToAll = async (ids, body) => {
     return Promise.all(all);
 };
 
+const sendListMembers = async () => {
+  const all = Object.keys(participants).map(i => sendToOne(i, {members: getAllParticipants().filter(participant => participant.id !== participants[i].id)}));
+  return Promise.all(all);
+}
+
+const getAllParticipants = () => {
+  return Object.keys(participants).map(id => ({
+    ...participants[id],
+  }));
+}
+
 exports.handler = async(event) => {
-    
+    console.log(event)
     if(event.requestContext){
         const connectionId = event.requestContext.connectionId;
         const routeKey = event.requestContext.routeKey;
@@ -82,17 +99,17 @@ exports.handler = async(event) => {
             case '$connect':
                 break;
             case '$disconnect':
-                await sendToAll(Object.keys(participants), {systemMessage: true, message: `${participants[connectionId].name} acabou de sair.`});
+                await sendToAll(Object.keys(participants), {systemMessage: true, message: `${participants[connectionId]?.name} acabou de sair.`});
                 delete names[connectionId];
                 delete participants[connectionId];
-                await sendToAll(Object.keys(participants), {members:Object.values(participants)});
+                await sendListMembers();
                 break;
             case '$default':
                 break;
             case 'setName':
                 names[connectionId] = body.name;
                 participants[connectionId] = body.userConnected
-                await sendToAll(Object.keys(participants), {members:Object.values(participants)});
+                await sendListMembers();
                 await sendToAll(Object.keys(participants), {systemMessage: true, message: `${participants[connectionId].name} acabou de entrar.`});
                 break;
             case 'sendPublic':
@@ -108,21 +125,23 @@ exports.handler = async(event) => {
                 await sendToAll(Object.keys(participants),{
                   message: `${body.message}`,
                   from: {
-                    id: connectionId,
                     ...participants[connectionId]
                   }
                 });
                 await sendToBot(Object.keys(participants), body.message);
                 break;
             case 'sendPrivate':
-                const to  = Object.keys(participants).find(key => participants[key] === body.to);
-                await sendToOne(to, {
+                const to = Object.keys(participants).find(key => participants[key].id === body.to.id);
+                await sendToAll([to, connectionId],{                  
                   privateMessage: true, 
                   message: `${body.message}`,
+                  to: {
+                    ...participants[to]
+                  },
                   from: {
-                    id: connectionId,
                     ...participants[connectionId]
-                  }});
+                  }
+                });
                 break;
             default:
         }

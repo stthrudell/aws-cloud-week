@@ -9,7 +9,7 @@ import { ChatMessage } from './ChatMessage';
 const useSharedSocket = () => useBetween(useSocket);
 
 export const ChatClient = () => {
-  const { isConnected, members, chatRows, onConnect, onDisconnect } = useSharedSocket()
+  const { isConnected, members, chatRows, onConnect, onDisconnect, setPrivateTo } = useSharedSocket()
 
   return (
     <Flex
@@ -43,10 +43,11 @@ export const ChatClient = () => {
                 {isConnected && <Button size='sm' variant="ghost" color="orange" onClick={onDisconnect}><Icon as={IoExitOutline} /></Button>}
               </HStack>
               <Divider mb="15px" opacity="0.2" />
-              {!members.length && <Text fontSize='sm' as='i' fontWeight="thin" opacity="0.3">Nenhum participante</Text>}
+              {!isConnected && <Text fontSize='sm' as='i' fontWeight="thin" opacity="0.3">Entre no chat para ver os participantes</Text>}
+              {!members.length && isConnected && <Text fontSize='sm' as='i' fontWeight="thin" opacity="0.3">Nenhum participante</Text>}
               {members.map((member, index) =>
-                <ListItem key={index} onClick={() => console.log("mandar msg para ", member)}>
-                  <Text style={{ fontWeight: 800 }}>{member.name}</Text>
+                <ListItem key={index} onClick={() => setPrivateTo(member)}>
+                  <Text style={{ fontWeight: 800 }}>{member?.name}</Text>
                 </ListItem>
               )}
             </List>

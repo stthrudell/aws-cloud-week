@@ -8,23 +8,13 @@ import useSocket, { IParticipant } from "../Hooks/useSocket"
 import { ColorPicker } from "chakra-color-picker";
 import { ColourOption, colourOptions } from "./data";
 
-const transformParticipantToSelectOption = (participants: IParticipant[]) => {
-  if (!participants) return [];
-
-  return participants.map(participant => ({
-    label: participant.name,
-    value: participant.name,
-    color: participant.nickColor
-  }))
-}
+const useSharedSocket = () => useBetween(useSocket);
 
 export const InputMessage = () => {
   const [message, setMessage] = React.useState("");
-  const [privateTo, setPrivateTo] = React.useState<any>(null);
   const [dropDownUserOpen, setDropDownUserOpen] = React.useState(false);
 
-  const useSharedSocket = () => useBetween(useSocket);
-  const { isConnected, onSendPublicMessage, onSendPrivateMessage, onSendBotMessage, onConnect, members } = useSharedSocket()
+  const { isConnected, onSendPublicMessage, onConnect, members, actualUserConnected, privateTo, setPrivateTo } = useSharedSocket()
   const inputChatRef = React.useRef<HTMLInputElement>(null)
   const selectRef = React.useRef<HTMLSelectElement>(null)
 
@@ -41,7 +31,11 @@ export const InputMessage = () => {
   }
 
   const handleSelectPrivateTo = (value) => {
-    setPrivateTo(value)
+    setPrivateTo({
+      name: value.name,
+      nickColor: value.nickColor,
+      id: value.id
+    })
     setDropDownUserOpen(false)
     setMessage("")
     inputChatRef.current?.focus()
@@ -51,6 +45,16 @@ export const InputMessage = () => {
     if (!privateTo || event.key !== 'Escape') return;
     setPrivateTo(null)
   }
+
+  const transformParticipantToSelectOption = React.useCallback((participants: IParticipant[]) => {
+    if (!participants) return [];
+    return participants.filter(participant => participant?.id !== actualUserConnected?.id).map(participant => ({
+      label: participant.name,
+      value: participant.name,
+      color: participant.nickColor,
+      ...participant
+    }))
+  }, [])
 
   React.useEffect(() => {
     if (!message) {
@@ -62,8 +66,6 @@ export const InputMessage = () => {
     setDropDownUserOpen(true)
     selectRef.current?.focus()
   }, [message])
-
-  console.log(privateTo, 'memb')
 
   return (
     <VStack>
@@ -94,13 +96,13 @@ export const InputMessage = () => {
           {privateTo && (
             <Text
               position="absolute"
-              background={privateTo.color || 'green'}
+              background={privateTo.nickColor || 'green'}
               top={0} width="99%"
               padding="5px 10px"
               borderTopRadius="md"
               color="white"
             >
-              Enviar mensagem para {privateTo?.label}
+              Enviar mensagem para {privateTo?.name}
             </Text>
           )}
           <Input
