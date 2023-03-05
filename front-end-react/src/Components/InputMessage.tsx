@@ -20,7 +20,6 @@ export const InputMessage = () => {
 
   const handleSendMessage = (event) => {
     event.preventDefault()
-    console.log(message)
     onSendPublicMessage(message)
     setMessage("")
     inputChatRef.current?.focus()

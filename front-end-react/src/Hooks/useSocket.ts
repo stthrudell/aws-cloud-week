@@ -37,9 +37,8 @@ const useSocket: () => Props = () => {
   const onSocketOpen = React.useCallback(() => {
     setIsConnected(true);
     setActualUserConnected(userConnected)
-    console.log('to setando', actualUserConnected, userConnected)
     socket.current?.send(JSON.stringify({ action: 'setName', userConnected }));
-  }, [actualUserConnected, userConnected]);
+  }, [userConnected]);
 
   const onSocketClose = React.useCallback(() => {
     setMembers([]);

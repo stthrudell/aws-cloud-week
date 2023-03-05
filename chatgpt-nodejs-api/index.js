@@ -145,8 +145,6 @@ exports.handler = async(event) => {
                   }
                 });
 
-                console.log('toooo', to)
-
                 if(to === 'bot') await sendToBot([connectionId], body.message);
 
                 break;
