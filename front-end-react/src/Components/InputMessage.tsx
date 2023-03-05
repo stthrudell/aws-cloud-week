@@ -57,11 +57,10 @@ export const InputMessage = () => {
   }, [])
 
   React.useEffect(() => {
-    if (!message) {
+    if (!message || message !== '/') {
       setDropDownUserOpen(false)
       return;
     };
-    if (!message.startsWith('/')) return;
 
     setDropDownUserOpen(true)
     selectRef.current?.focus()
@@ -77,7 +76,7 @@ export const InputMessage = () => {
       {/* {!isConnected && <Button onClick={onConnect}>Entrar no chat</Button>} */}
 
       <form onSubmit={handleSendMessage} style={{ width: '100%' }}>
-        <InputGroup size='md' borderRadius="md" flexDir="column" paddingTop="30px" alignItems="center">
+        <InputGroup size='md' borderRadius="md" flexDir="column" alignItems="center">
           <Select
             //@ts-ignore
             ref={selectRef}
@@ -98,16 +97,17 @@ export const InputMessage = () => {
             }}
           />
           {privateTo && (
-            <Text
-              position="absolute"
-              background={privateTo.nickColor || 'green'}
-              top={0} width="99%"
-              padding="5px 10px"
+            <HStack
               borderTopRadius="md"
+              background={privateTo.nickColor || 'green'}
+              padding="5px 10px"
               color="white"
             >
-              Enviar mensagem para {privateTo?.name}
-            </Text>
+              <Text>
+                Enviar mensagem para {privateTo?.name}
+              </Text>
+              <Icon as={FaTimes} transform="rotate(180deg)" aria-label="Remover" onClick={() => setPrivateTo(null)} cursor="pointer" />
+            </HStack>
           )}
           <Input
             ref={inputChatRef}
@@ -141,7 +141,7 @@ export const InputMessage = () => {
 };
 
 const colourStyles: StylesConfig<ColourOption> = {
-  control: (styles) => ({ ...styles, backgroundColor: 'white', width: '100%', border: "none", visibility: 'hidden', position: 'absolute' }),
+  control: (styles) => ({ ...styles, backgroundColor: 'white', width: '100%', border: "none", visibility: 'hidden', position: 'absolute', left: "-99999999999999999999px" }),
   option: (styles, { data, isDisabled, isFocused, isSelected }) => {
     const color = data.color;
     return {
