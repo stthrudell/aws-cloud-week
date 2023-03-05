@@ -37,16 +37,18 @@ async function runCompletion(message) {
 }
 
 const sendToBot = async (ids, mess) => {
-    
-    let res = await runCompletion(mess);
+    const participant = participants[ids[0]]
+    const messageForBot = `Olá, meu nome é ${participant?.name}, ${mess}`
+    let res = await runCompletion(messageForBot);
     
     let message = {
-      fromBot: true, 
+      fromBot: true,
+      privateMessage: true,
       message: res,
-      from: {
-        name: 'Bot'
-      }
+      from: participants.bot,
+      to: participant
     }
+
     const all = ids.map(i => sendToOne(i, message));
     
     return Promise.all(all);
@@ -142,6 +144,11 @@ exports.handler = async(event) => {
                     ...participants[connectionId]
                   }
                 });
+
+                console.log('toooo', to)
+
+                if(to === 'bot') await sendToBot([connectionId], body.message);
+
                 break;
             default:
         }
