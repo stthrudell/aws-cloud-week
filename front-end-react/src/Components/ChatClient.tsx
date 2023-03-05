@@ -1,15 +1,26 @@
 import React from 'react'
 import useSocket from '../Hooks/useSocket';
-import { Flex, Container, Grid, List, ListItem, Button, Text, GridItem, Divider, Icon, HStack } from '@chakra-ui/react'
+import { Flex, Container, Grid, List, ListItem, Button, Text, GridItem, Divider, Icon, HStack, useMediaQuery, Box } from '@chakra-ui/react'
 import { InputMessage } from './InputMessage';
 import { useBetween } from 'use-between';
-import { IoExitOutline } from 'react-icons/io5';
+import { IoExitOutline, IoEye, IoEyeOff } from 'react-icons/io5';
 import { ChatMessage } from './ChatMessage';
 
 const useSharedSocket = () => useBetween(useSocket);
 
 export const ChatClient = () => {
+  const [showParticipants, setShowParticipants] = React.useState(true)
   const { isConnected, members, chatRows, onDisconnect, setPrivateTo } = useSharedSocket()
+
+  const [isLargerThan767] = useMediaQuery('(min-width: 767px)')
+
+  React.useEffect(() => {
+    setShowParticipants(isLargerThan767)
+  }, [isLargerThan767])
+
+  const handleShowParticipants = () => {
+    setShowParticipants(show => !show)
+  } 
 
   return (
     <Flex
@@ -19,14 +30,14 @@ export const ChatClient = () => {
       alignItems='center'
     >
       <Container height="90%" maxW='1200px'>
-        <Grid height="100%" templateColumns='1fr 4fr'>
+        <Grid height="100%" templateColumns={['1fr', '1fr', '1fr 4fr']}>
           {/** Grid com os contatos conectados */}
           <GridItem
             backgroundColor="#2D46C9"
             color='white'
             padding="20px"
             overflowY="scroll"
-            borderRadius="10px 0 0 10px"
+            borderRadius={["10px 10px 0 0", "10px 10px 0 0", "10px 0 0 10px"]}
             css={{
               '&::-webkit-scrollbar': {
                 width: '6px',
@@ -39,17 +50,22 @@ export const ChatClient = () => {
           >
             <List>
               <HStack justifyContent="space-between">
-                <Text>Participantes</Text>
+                <HStack>
+                  <Text>Participantes</Text>
+                  {!isLargerThan767 && isConnected && <Icon as={showParticipants ? IoEye : IoEyeOff} onClick={handleShowParticipants} />}
+                </HStack>
                 {isConnected && <Button size='sm' variant="ghost" color="orange" onClick={onDisconnect}><Icon as={IoExitOutline} /></Button>}
               </HStack>
               <Divider mb="15px" opacity="0.2" />
               {!isConnected && <Text fontSize='sm' as='i' fontWeight="thin" opacity="0.3">Entre no chat para ver os participantes</Text>}
               {!members.length && isConnected && <Text fontSize='sm' as='i' fontWeight="thin" opacity="0.3">Nenhum participante</Text>}
-              {members.map((member, index) =>
-                <ListItem key={index} onClick={() => setPrivateTo(member)} cursor="pointer" _hover={{ background: '#3950c7' }} borderRadius="md" paddingX="10px">
-                  <Text style={{ fontWeight: 800 }}>{member?.name}</Text>
-                </ListItem>
-              )}
+              <Box hidden={!showParticipants}>
+                {members.map((member, index) =>
+                  <ListItem key={index} onClick={() => setPrivateTo(member)} cursor="pointer" _hover={{ background: '#3950c7' }} borderRadius="md" paddingX="10px">
+                    <Text style={{ fontWeight: 800 }}>{member?.name}</Text>
+                  </ListItem>
+                )}
+              </Box>
             </List>
           </GridItem>
           {/* Grid das mensagens enviadas  */}
@@ -61,7 +77,7 @@ export const ChatClient = () => {
               templateRows='10fr 1fr'
               background="white"
               padding="20px"
-              borderRadius="0 10px 10px 0"
+              borderRadius={["0 0 10px 10px", "0 0 10px 10px", "0 10px 10px 0"]}
               height="100%"
             >
               <Grid
