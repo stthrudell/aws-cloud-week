@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid'
 
 const URL = 'wss://sbitwzz8e9.execute-api.sa-east-1.amazonaws.com/production/';
 
-interface SocketData {  
+interface SocketData {
   members?: any
   message: string;
   fromBot?: boolean;
@@ -28,7 +28,7 @@ const useSocket: () => Props = () => {
   const socket = React.useRef<CustomWebSocket | null>(null);
   const [isConnected, setIsConnected] = React.useState(false);
   const [actualUserConnected, setActualUserConnected] = React.useState<IParticipant | null>(null);
-  const [members, setMembers] = React.useState([]);
+  const [members, setMembers] = React.useState<IParticipant[]>([]);
   const [chatRows, setChatRows] = React.useState<SocketData[]>([]);
   const [privateTo, setPrivateTo] = React.useState<any>(null);
 
@@ -94,9 +94,9 @@ const useSocket: () => Props = () => {
       privateTo
         ? onSendPrivateMessage(message)
         : socket.current?.send(JSON.stringify({
-        action: 'sendPublic',
-        message,
-      }));
+          action: 'sendPublic',
+          message,
+        }));
     }
   }, [onSendPrivateMessage, privateTo]);
 
@@ -116,6 +116,16 @@ const useSocket: () => Props = () => {
     }
   }, [isConnected]);
 
+  const handleSetPrivateTo = (participant: IParticipant | null) => {
+    const hasParticipant = members.filter(member => member.id === participant?.id);
+    if (!hasParticipant.length) {
+      alert('Membro saiu da sala');
+      return;
+    }
+
+    setPrivateTo(participant)
+  }
+
   return {
     isConnected,
     members,
@@ -129,7 +139,7 @@ const useSocket: () => Props = () => {
     onDisconnect,
     actualUserConnected,
     privateTo,
-    setPrivateTo,
+    setPrivateTo: handleSetPrivateTo,
   }
 }
 
