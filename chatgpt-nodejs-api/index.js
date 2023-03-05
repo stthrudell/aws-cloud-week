@@ -7,7 +7,7 @@ const names = {};
 const participants = {
   bot: {
     name: 'BOT',
-    nickColor: 'red',
+    nickColor: '#2D46C9',
     id: 'bot'
   }
 }

@@ -118,7 +118,7 @@ const useSocket: () => Props = () => {
 
   const handleSetPrivateTo = (participant: IParticipant | null) => {
     const hasParticipant = members.filter(member => member.id === participant?.id);
-    if (!hasParticipant.length) {
+    if (!hasParticipant.length && participant) {
       alert('Membro saiu da sala');
       return;
     }

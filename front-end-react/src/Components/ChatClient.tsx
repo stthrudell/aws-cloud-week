@@ -9,7 +9,7 @@ import { ChatMessage } from './ChatMessage';
 const useSharedSocket = () => useBetween(useSocket);
 
 export const ChatClient = () => {
-  const { isConnected, members, chatRows, onConnect, onDisconnect, setPrivateTo } = useSharedSocket()
+  const { isConnected, members, chatRows, onDisconnect, setPrivateTo } = useSharedSocket()
 
   return (
     <Flex
@@ -46,7 +46,7 @@ export const ChatClient = () => {
               {!isConnected && <Text fontSize='sm' as='i' fontWeight="thin" opacity="0.3">Entre no chat para ver os participantes</Text>}
               {!members.length && isConnected && <Text fontSize='sm' as='i' fontWeight="thin" opacity="0.3">Nenhum participante</Text>}
               {members.map((member, index) =>
-                <ListItem key={index} onClick={() => setPrivateTo(member)}>
+                <ListItem key={index} onClick={() => setPrivateTo(member)} cursor="pointer" _hover={{ background: '#3950c7' }} borderRadius="md" paddingX="10px">
                   <Text style={{ fontWeight: 800 }}>{member?.name}</Text>
                 </ListItem>
               )}
