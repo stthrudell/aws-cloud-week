@@ -9,9 +9,11 @@ const useSharedSocket = () => useBetween(useSocket);
 
 export const ChatMessage = ({ message }) => {
 
-  const { actualUserConnected } = useSharedSocket()
+  const { actualUserConnected, setPrivateTo } = useSharedSocket()
 
   const elRef = React.useRef<HTMLParagraphElement>(null);
+
+  const myMessage = message.from?.id === actualUserConnected?.id;
 
   React.useEffect(() => {
     elRef.current?.scrollIntoView({
@@ -20,7 +22,11 @@ export const ChatMessage = ({ message }) => {
     });
   }, [message])
 
-  console.log(actualUserConnected, message)
+  const handleClickOnMessage = () => {
+    if (myMessage) return;
+
+    setPrivateTo(message.from)
+  }
 
   if (message.privateMessage) {
     const forMe = actualUserConnected?.id === message.to.id
@@ -36,6 +42,8 @@ export const ChatMessage = ({ message }) => {
         }}
         transition="all .3s ease"
         data-group
+        onClick={handleClickOnMessage}
+        cursor={!myMessage && !message.systemMessage ? 'pointer' : ''}
       >
         <HStack
           justifyContent="space-between"
@@ -71,7 +79,6 @@ export const ChatMessage = ({ message }) => {
             para: <span style={{ fontWeight: 800, color: message.to.nickColor || 'black' }}>{message.to.name}</span>
           </Text>
         )}
-
       </Box>
     )
   }
@@ -87,6 +94,8 @@ export const ChatMessage = ({ message }) => {
       _hover={{
         background: '#f7f7f7'
       }}
+      onClick={handleClickOnMessage}
+      cursor={!myMessage && !message.systemMessage ? 'pointer' : ''}
     >
       {message.from &&
         <span style={{ fontWeight: 800, color: message.from.nickColor || 'black' }}>

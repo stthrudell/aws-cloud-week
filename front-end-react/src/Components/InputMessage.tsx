@@ -67,6 +67,10 @@ export const InputMessage = () => {
     selectRef.current?.focus()
   }, [message])
 
+  React.useEffect(() => {
+    selectRef.current?.focus()
+  }, [privateTo])
+
   return (
     <VStack>
       {!isConnected && <ModalSetName onConfirm={handleJoinChat} />}
