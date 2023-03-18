@@ -1,18 +1,8 @@
 require('dotenv').config()
-const AWS = require('aws-sdk')
-
-const ENDPOINT = process.env.API_ENDPOINT
-const client = new AWS.ApiGatewayManagementApi({endpoint: ENDPOINT})
-const names = {};
-const participants = {
-  bot: {
-    name: 'BOT',
-    nickColor: '#2D46C9',
-    id: 'bot'
-  }
-}
-
 const { Configuration, OpenAIApi } = require("openai");
+const Connection = require('./libs/connections')
+
+let connection
 
 const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
@@ -36,8 +26,8 @@ async function runCompletion(message) {
     return completion.data.choices[0].text
 }
 
-const sendToBot = async (ids, mess) => {
-    const participant = participants[ids[0]]
+const sendToBot = async (id, mess, event) => {
+    const participant = connection.connections[id]
     const messageForBot = `Olá, meu nome é ${participant?.name}, ${mess}`
     let res = await runCompletion(messageForBot);
     
@@ -45,45 +35,14 @@ const sendToBot = async (ids, mess) => {
       fromBot: true,
       privateMessage: true,
       message: res,
-      from: participants.bot,
+      from: connection.connections.bot,
       to: participant
     }
-
-    const all = ids.map(i => sendToOne(i, message));
     
-    return Promise.all(all);
+    return connection.publishToAll(event, message)
 };
-
-const sendToOne = async (id, body) => {
-    try {
-        await client.postToConnection({
-            'ConnectionId': id,
-            'Data':Buffer.from(JSON.stringify(body))
-        }).promise();
-    } catch (e) {
-        console.log(e);
-    }
-};
-
-const sendToAll = async (ids, body) => {
-    console.log("BODY:", body)
-    const all = ids.map(i => sendToOne(i, body));
-    return Promise.all(all);
-};
-
-const sendListMembers = async () => {
-  const all = Object.keys(participants).map(i => sendToOne(i, {members: getAllParticipants().filter(participant => participant.id !== participants[i].id)}));
-  return Promise.all(all);
-}
-
-const getAllParticipants = () => {
-  return Object.keys(participants).map(id => ({
-    ...participants[id],
-  }));
-}
 
 exports.handler = async(event) => {
-    console.log(event)
     if(event.requestContext){
         const connectionId = event.requestContext.connectionId;
         const routeKey = event.requestContext.routeKey;
@@ -91,59 +50,62 @@ exports.handler = async(event) => {
         let body = {};
         try{
             if(event.body){
-                body = JSON.parse(event.body);
+              body = JSON.parse(event.body);
             }
         }catch (err){
             console.log(err);
+        }
+
+        if (!connection) {
+          connection = new Connection({})
+          connection.init(event)
         }
         
         switch(routeKey){
             case '$connect':
                 break;
             case '$disconnect':
-                await sendToAll(Object.keys(participants), {systemMessage: true, message: `${participants[connectionId]?.name} acabou de sair.`});
-                delete names[connectionId];
-                delete participants[connectionId];
-                await sendListMembers();
+                await connection.publishToAll(event, {systemMessage: true, message: `${connection.connections[connectionId]?.name} acabou de sair.`})
+                await connection.removeConnection(connectionId)
+                await connection.sendListMembers()
                 break;
             case '$default':
                 break;
             case 'setName':
-                names[connectionId] = body.name;
-                participants[connectionId] = body.userConnected
-                await sendListMembers();
-                await sendToAll(Object.keys(participants), {systemMessage: true, message: `${participants[connectionId].name} acabou de entrar.`});
+              console.log('$SETNAME', event)
+                await connection.addConnection(connectionId, body.userConnected)
+                await connection.publishToAll(event, {systemMessage: true, message: `${body.userConnected.name} acabou de entrar.`})
+                await connection.sendListMembers()
                 break;
             case 'sendPublic':
-                await sendToAll(Object.keys(participants),{
+                await connection.publishToAll(event, {
                   message: `${body.message}`,
                   from: {
                     id: connectionId,
-                    ...participants[connectionId]
+                    ...connection.connections[connectionId]
                   }
-                });
+                })
                 break;
             case 'sendBot':
-                await sendToAll(Object.keys(participants),{
-                  message: `${body.message}`,
-                  from: {
-                    ...participants[connectionId]
-                  }
-                });
-                await sendToBot(Object.keys(participants), body.message);
+                console.log('$sendBot', event)
                 break;
             case 'sendPrivate':
-                const to = Object.keys(participants).find(key => participants[key].id === body.to.id);
-                await sendToAll([to, connectionId],{                  
+                const to = Object.keys(connection.connections).find(key => connection.connections[key].id === body.to.id);
+                const payload = {                  
                   privateMessage: true, 
                   message: `${body.message}`,
                   to: {
-                    ...participants[to]
+                    ...connection.connections[to]
                   },
                   from: {
-                    ...participants[connectionId]
+                    ...connection.connections[connectionId]
                   }
-                });
+                }
+
+                await Promise.all([
+                  connection.publish(connectionId, payload),
+                  connection.publish(to, payload),
+                ])
 
                 if(to === 'bot') await sendToBot([connectionId], body.message);
 

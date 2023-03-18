@@ -1,4 +1,4 @@
 /node_modules
-function.zip
+function*.zip
 websocket.zip
 .env

@@ -1,7 +1,7 @@
 import React from 'react'
 import { v4 as uuid } from 'uuid'
 
-const URL = 'wss://sbitwzz8e9.execute-api.sa-east-1.amazonaws.com/production/';
+const URL = 'wss://bd8iyoqvw2.execute-api.sa-east-1.amazonaws.com/production';
 
 interface SocketData {
   members?: any
